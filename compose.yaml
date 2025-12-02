@@ -1,0 +1,12 @@
+services:
+  database:
+    image: "postgres:latest"
+    ports:
+      - 5433:5432
+
+    volumes:
+      - ${PWD}/db-data/:/var/lib/postgresql/data/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: farmers_market_DB

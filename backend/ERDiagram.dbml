@@ -1,0 +1,31 @@
+
+```
+Potato game tracks scoreboard for each user and stores, 
+an user has a table for session history, how many spins
+they spent on each session and tracks:
+
+- Highest value
+- Total bets 
+- Biggest loss
+- Biggest win
+```
+
+Table player {
+  id integer [primary key]
+  name varchar
+  current_balance integer
+  sessions_played integer
+}
+
+Table session {
+  id [primary key]
+  highest_bet integer
+  biggest_loss integer
+  biggest_win integer
+}
+
+Table player_session{
+  id [primary key]
+  player_id [ref:> player.id]
+  session_id [ref:> session.id]
+}
