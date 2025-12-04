@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "noEmit": true,
+    "types": ["cypress"],
+    "isolatedModules": false
+  },
+  "include": ["cypress/**/*.ts", "cypress/**/*.js"]
+}

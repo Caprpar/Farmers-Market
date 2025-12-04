@@ -8,11 +8,11 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
-    "target": "esnext",
+    "target": "es6",
     // "types": [],
     // For nodejs:
-    "lib": ["esnext"],
-    "types": ["node"],
+    "lib": ["es6", "dom"],
+    "types": ["node", "cypress"],
     // and npm install -D @types/node
 
     // Other Outputs
@@ -34,12 +34,13 @@
 
     // Recommended Options
     "strict": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
     "rewriteRelativeImportExtensions": true
-  }
+  },
+  "include": ["**/*.ts", "**/*.svelte", "cypress", "src", "cypress.d.ts"]
 }
