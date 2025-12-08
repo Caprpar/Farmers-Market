@@ -1,5 +1,5 @@
 import playerService from "../services/playerService.ts";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 export const getPlayerNames = async (_req: Request, res: Response) => {
   try {
     const rows = await playerService.getPlayerNames();

@@ -1,6 +1,4 @@
 import { Router } from "express";
-import { db } from "../database.ts";
-import { player } from "../db/schema.ts";
 import { getPlayerNames } from "../services/playerService.ts";
 const router = Router();
 
