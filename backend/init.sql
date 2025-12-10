@@ -2,10 +2,10 @@ CREATE DATABASE farmers_market;
 
 CREATE TABLE player (
   id SERIAL NOT NULL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL,
+  name VARCHAR(50) NOT NULL UNIQUE,
   password_hash VARCHAR(100) NOT NULL,
-  current_balance INT,
-  highest_score INT
+  current_balance INT DEFAULT 1000,
+  highest_score INT DEFAULT 1000
 );
 
 CREATE TABLE session (
@@ -35,7 +35,8 @@ CREATE TABLE player_session (
 
 -- delete player by id
 DELETE FROM player
-WHERE id = $1;
+WHERE id = $1 
+RETURNING id, name;
 
 -- delete session by id
 DELETE FROM session
@@ -49,7 +50,21 @@ VALUES
   ( 'Ingo', 'jaksdjui237', 2000, 9000),
   ( 'Hampus', 'oijkasf218', 3000, 4000),
   ( 'Jonatan', 'kasjhf2152', 4000, 6000),
-  ( 'Sebastian', '21jkr4jskk', 5000, 2000);
+  ( 'Sebastian', '21jkr4jskk', 5000, 2000),
+  ( 'Felix', '12gkslawrjfdgjl', 7000, 10360);
+
+
+-- update player 
+UPDATE player
+SET 
+  name = 'Jonas',
+  password_hash = '12345',
+  current_balance = 9009,
+  highest_score = 20345
+WHERE id = 1;
+
+--get player by id
+SELECT name, current_balance, highest_score FROM player WHERE id = 1;
 
 -- add sessions 
 INSERT INTO 
@@ -140,7 +155,7 @@ SELECT p.name as player,
   FROM player p
   LEFT JOIN player_session ps ON ps.player_id = p.id
   LEFT JOIN session s on s.id = ps.session_id
-  WHERE p.id = $1
+  WHERE p.id = 1
   GROUP by p.name;
 
 -- update session data by sessionId
