@@ -61,13 +61,13 @@ export const updatePlayer = async (req: Request, res: Response) => {
     const { name, password_hash, current_balance, highest_score } =
       req.body as Partial<allPlayerData>;
     const updatedData = {
-      name: name ?? old.name,
-      password_hash: password_hash ?? old.password_hash,
-      current_balance: current_balance ?? old.current_balance,
+      name: name ?? old.name!,
+      password_hash: password_hash ?? old.password_hash!,
+      current_balance: current_balance ?? old.current_balance!,
       highest_score:
         current_balance! > old.highest_score!
-          ? current_balance
-          : (highest_score ?? old.highest_score),
+          ? current_balance!
+          : (highest_score ?? old.highest_score!),
     };
     const rows = await playerService.updatePlayer(id, updatedData);
     return res.status(201).json(rows);
