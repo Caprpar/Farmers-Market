@@ -15,10 +15,11 @@ CREATE TABLE session (
   biggest_loss INT,
   biggest_win INT,
   highest_bet INT,
-  player_id SERIAL,
-  CONSTRAINT fk_player FOREIGN KEY (id)
-  REFERENCES player(id)
-  ON DELETE CASCADE
+  player_id INT NOT NULL,
+  CONSTRAINT fk_session_player
+    FOREIGN KEY (player_id)
+    REFERENCES player(id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE player_session (
@@ -73,13 +74,14 @@ session(
   top_amount,
   biggest_loss,
   biggest_win,
-  highest_bet
+  highest_bet,
+  player_id
 )
 VALUES
-  (4222, 7000, 500, 2000, 6000),
-  (6422, 1230, 4021, 1200, 1700),
-  (1239, 5422, 100, 499, 1090),
-  (554, 4992, 2340, 900, 1000);
+  (4222, 7000, 500, 2000, 6000, 1),
+  (6422, 1230, 4021, 1200, 1700, 1),
+  (1239, 5422, 100, 499, 1090, 1),
+  (554, 4992, 2340, 900, 1000, 1);
 
 -- add sessions to player
 INSERT INTO 
@@ -104,33 +106,33 @@ VALUES
   (1,4);
 
 -- add player
-INSERT INTO 
-  player(name, password_hash, current_balance, highest_score)
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4
-);
+-- INSERT INTO 
+--   player(name, password_hash, current_balance, highest_score)
+-- VALUES (
+--   $1,
+--   $2,
+--   $3,
+--   $4
+-- );
 
 -- add session
-INSERT INTO session(
-  current_balance,
-  top_amount,
-  biggest_loss,
-  biggest_win,
-  highest_bet,
-  player_id
-)
-VALUES
-  ($1, $2, $3, $4, $5);
+-- INSERT INTO session(
+--   current_balance,
+--   top_amount,
+--   biggest_loss,
+--   biggest_win,
+--   highest_bet,
+--   player_id
+-- )
+-- VALUES
+--   ($1, $2, $3, $4, $5);
 
 -- add session to player
-INSERT INTO player_session(
-  player_id, session_id
-)
-VALUES
-  ($1,$2);
+-- INSERT INTO player_session(
+--   player_id, session_id
+-- )
+-- VALUES
+--   ($1,$2);
 
 -- Get sessions by player id
 SELECT name from player; 
@@ -159,22 +161,45 @@ SELECT p.name as player,
   GROUP by p.name;
 
 -- update session data by sessionId
-UPDATE session
-SET current_balance = $1,
-    top_amount = $2,
-    biggest_loss = $3,
-    biggest_win = $4,
-    highest_bet = $5
-WHERE id = $6;
-
+-- UPDATE session
+-- SET current_balance = $1,
+--     top_amount = $2,
+--     biggest_loss = $3,
+--     biggest_win = $4,
+--     highest_bet = $5
+-- WHERE id = $6;
+--
 -- Get players with each highscore
 SELECT p.name as player,
-COALESCE(MAX(s.top_amount),0) as highscore
+COALESCE(MAX(p.highest_score),0) as highscore
 FROM player p 
 LEFT JOIN player_session ps ON ps.player_id = p.id
 LEFT JOIN session s ON s.player_id = ps.id
 GROUP BY p.name
 ORDER BY highscore DESC;
+
+-- function that updates players highest_score whenever a new top_amount is added to a session
+CREATE OR REPLACE FUNCTION update_player_highscore()
+RETURNS trigger AS $$
+BEGIN
+  UPDATE player
+  SET highest_score = NEW.top_amount
+  WHERE id = NEW.player_id
+    AND NEW.top_amount IS NOT NULL
+    AND (
+      highest_score IS NULL
+      OR NEW.top_amount > highest_score
+    );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- create trigger that when a new max top amout is achieved update highscore to that amount
+CREATE TRIGGER trg_update_player_highscore
+AFTER INSERT OR UPDATE OF top_amount ON session
+FOR EACH ROW
+WHEN (NEW.top_amount IS NOT NULL)
+EXECUTE FUNCTION update_player_highscore();
 
 -- DROP TABLE player;
 -- DROP TABLE session;
