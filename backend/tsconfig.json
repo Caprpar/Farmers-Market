@@ -12,7 +12,7 @@
     // "types": [],
     // For nodejs:
     "lib": ["es6", "dom"],
-    "types": ["node", "cypress"],
+    "types": ["node"],
     // and npm install -D @types/node
 
     // Other Outputs
