@@ -1,10 +1,21 @@
 import { Router } from "express";
-import { getPlayerNames } from "../services/playerService.ts";
+import {
+  getPlayerNames,
+  getPlayerById,
+  deletePlayerById,
+  createPlayer,
+  updatePlayer,
+} from "../controls/playerController.ts";
 const router = Router();
 
-router.get("/players", async (_req, res) => {
-  const result = await getPlayerNames();
-  res.send(result);
-});
+router.get("/players", getPlayerNames);
+
+router.post("/player", createPlayer);
+
+router.get("/player/:id", getPlayerById);
+
+router.delete("/player/:id", deletePlayerById);
+
+router.patch("/player/:id", updatePlayer);
 
 export default router;
