@@ -13,7 +13,6 @@ they spent on each session and tracks:
 Table player {
   id integer [primary key]
   name varchar notNull
-  current_balance integer notNull
   current_balance integer
 }
 
@@ -32,4 +31,3 @@ Table player_session{
   player_id [ref:> player.id]
   session_id [ref:> session.id]
 }
-
