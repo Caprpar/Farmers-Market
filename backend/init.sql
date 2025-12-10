@@ -1,4 +1,4 @@
-CREATE DATABASE farmers_market;
+-- CREATE DATABASE farmers_market;
 
 CREATE TABLE player (
   id SERIAL NOT NULL PRIMARY KEY,
@@ -35,13 +35,13 @@ CREATE TABLE player_session (
 );
 
 -- delete player by id
-DELETE FROM player
-WHERE id = $1 
-RETURNING id, name;
+-- DELETE FROM player
+-- WHERE id = $1 
+-- RETURNING id, name;
 
 -- delete session by id
-DELETE FROM session
-WHERE id = $1;
+-- DELETE FROM session
+-- WHERE id = $1;
 
 -- add players 
 INSERT INTO 
@@ -168,38 +168,16 @@ SELECT p.name as player,
 --     biggest_win = $4,
 --     highest_bet = $5
 -- WHERE id = $6;
---
+
 -- Get players with each highscore
-SELECT p.name as player,
-COALESCE(MAX(p.highest_score),0) as highscore
+SELECT p.name AS player, p.id AS id,
+COALESCE(MAX(p.highest_score),0) AS highscore
 FROM player p 
-LEFT JOIN player_session ps ON ps.player_id = p.id
-LEFT JOIN session s ON s.player_id = ps.id
-GROUP BY p.name
+  LEFT JOIN player_session ps ON ps.player_id = p.id
+  LEFT JOIN session s ON s.player_id = ps.id
+GROUP BY p.id
 ORDER BY highscore DESC;
 
--- function that updates players highest_score whenever a new top_amount is added to a session
-CREATE OR REPLACE FUNCTION update_player_highscore()
-RETURNS trigger AS $$
-BEGIN
-  UPDATE player
-  SET highest_score = NEW.top_amount
-  WHERE id = NEW.player_id
-    AND NEW.top_amount IS NOT NULL
-    AND (
-      highest_score IS NULL
-      OR NEW.top_amount > highest_score
-    );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- create trigger that when a new max top amout is achieved update highscore to that amount
-CREATE TRIGGER trg_update_player_highscore
-AFTER INSERT OR UPDATE OF top_amount ON session
-FOR EACH ROW
-WHEN (NEW.top_amount IS NOT NULL)
-EXECUTE FUNCTION update_player_highscore();
-
--- DROP TABLE player;
+-- DROP TABLE player_session;
 -- DROP TABLE session;
+-- DROP TABLE player;
