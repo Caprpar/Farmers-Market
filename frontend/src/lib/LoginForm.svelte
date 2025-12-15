@@ -1,7 +1,4 @@
 <script lang="ts">
-  import jwt from "jsonwebtoken";
-  import "dotenv/config";
-
   let username: string = $state("");
   let password: string = $state("");
   let confirmPassword: string = $state("");
@@ -33,9 +30,8 @@
         .then((res) => res.json())
         .then((data) => {
           if (data.ok) {
-            const token = jwt.sign(data.data, process.env.JWT_HASH);
             console.log("success!");
-            localStorage.setItem("auth_token", "1337");
+            localStorage.setItem("auth_token", data.data.token);
             console.log(localStorage.getItem("auth_token"));
           }
           error = { error: data.error };
