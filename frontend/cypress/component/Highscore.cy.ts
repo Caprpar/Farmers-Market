@@ -38,14 +38,14 @@ describe("Highscore.cy.ts", () => {
 
   it("renders a table with 4 rows, containing the right data", () => {
     mount(Highscore);
-    cy.get('data-cy="name-1"').should("contain.text", "Caspar");
-    cy.get('data-cy="score-1"').should("contain.text", "4000");
-    cy.get('data-cy="name-2"').should("contain.text", "Felix");
-    cy.get('data-cy="score-2"').should("contain.text", "3000");
-    cy.get('data-cy="name-3"').should("contain.text", "Hampus");
-    cy.get('data-cy="score-3"').should("contain.text", "2000");
-    cy.get('data-cy="name-4"').should("contain.text", "Ingo");
-    cy.get('data-cy="score-4"').should("contain.text", "1000");
-    cy.get('data-cy="close-btn"').should("exist");
+    cy.get('[data-cy="name-1"]').should("contain.text", "Caspar");
+    cy.get('[data-cy="score-1"]').should("contain.text", "4000");
+    cy.get('[data-cy="name-2"]').should("contain.text", "Felix");
+    cy.get('[data-cy="score-2"]').should("contain.text", "3000");
+    cy.get('[data-cy="name-3"]').should("contain.text", "Hampus");
+    cy.get('[data-cy="score-3"]').should("contain.text", "2000");
+    cy.get('[data-cy="name-4"]').should("contain.text", "Ingo");
+    cy.get('[data-cy="score-4"]').should("contain.text", "1000");
+    cy.get('[data-cy="close-btn"]').should("exist");
   });
 });
