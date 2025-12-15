@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <link href="css/style.css" rel="stylesheet" />
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "forest", // "default", "dark", "forest", "neutral", "base"
+        // Exempel: egna färger
+      });
+    </script>
+  </head>
+  <body style="background-color: hsl(0 0 95)">
+    <pre class="mermaid">
+flowchart TD
+      game[Potato game start balance: 1000]
+      play(Play)
+      bet20[Bet 20% of current balance]
+      pressPlay{Press play}  
+      add20[Balance adds with 20%]
+      balHighscoreCondition{balance > highscore}
+      updateHighscore[Set highscore = balance]
+      sub20[Balance subtracts with 20%]
+      lostCondition{balance <= 0}
+      gameOver[Game over]
+      highscore[highscore]
+      biggestLoss[biggest_loss]
+      biggestWin[biggest_win]
+      balance[balance]
+      update[update]
+      variableDeltaChange{if variable tops itself}
+
+      game--> play
+      play--> bet20
+      bet20--> pressPlay
+      pressPlay--> |win| add20
+      add20--> balHighscoreCondition
+      balHighscoreCondition--> |yes| updateHighscore 
+      balHighscoreCondition--> |no| play 
+      pressPlay--> |loose| sub20
+      sub20--> lostCondition
+      lostCondition--> |yes| gameOver
+      lostCondition--> |no| play
+      variableDeltaChange-->update
+      update-->highscore
+      update-->biggestLoss
+      update-->biggestWin
+      update-->balance
+      add20-->variableDeltaChange
+      balHighscoreCondition-->variableDeltaChange
+      updateHighscore-->variableDeltaChange
+</pre
+    >
+  </body>
+</html>
