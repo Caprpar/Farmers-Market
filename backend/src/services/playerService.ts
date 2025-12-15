@@ -1,71 +1,100 @@
 import { db } from "../database.ts";
-import type { QueryResult } from "pg";
-import type { allPlayerData } from "../controls/playerController.ts";
+import type {
+  AllPlayerData,
+  PlayerNameRow,
+  Result,
+  PlayerRow,
+  UpdateUserConfirmation,
+  AddUserConfirmation,
+  DeleteUserConfirmation,
+  WithAuth,
+} from "../types.ts";
 import bcrypt from "bcrypt";
-
-interface players {
-  id: number;
-  name: string;
-}
-
-interface player {
-  id: number;
-  name: string;
-  current_balance: number;
-  highest_score: number;
-}
-
-export const getPlayerNames = async () => {
-  const { rows }: QueryResult<players> = await db.query(
-    `SELECT id, name from player`,
-  );
-  if (!rows) return { error: "No player fond" };
+const noUserFoundErr = "no user found";
+const passwordNotMatchName = "Password and username does not match";
+import jwt from "jsonwebtoken";
+import "dotenv/config";
+export const getPlayerNames = async (): Promise<Result<PlayerNameRow[]>> => {
   try {
-    return rows;
+    const { rows } = await db.query<PlayerNameRow>(
+      `SELECT id, name from player`,
+    );
+    return { ok: true, data: rows };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 
-export const getPlayerById = async (id: string) => {
-  const { rows }: QueryResult<player> = await db.query(
-    ` 
+export const confirmPlayer = async (
+  name: string,
+  password: string,
+): Promise<Result<Partial<PlayerRow & WithAuth>>> => {
+  // const hash = await bcrypt.compare(password, );
+  try {
+    const { rows } = await db.query<PlayerRow>(
+      `
+    SELECT id, name, password_hash FROM player WHERE name = $1;
+`,
+      [name],
+    );
+
+    if (!rows[0]) return { ok: false, error: noUserFoundErr };
+
+    const confirmPassword = await bcrypt.compare(
+      password,
+      rows[0].password_hash,
+    );
+
+    if (!confirmPassword) return { ok: false, error: passwordNotMatchName };
+    const secret = process.env.JWT_HASH;
+    if (!secret) throw new Error("JWT_HASH is not in .env");
+    const token = jwt.sign(rows[0], secret);
+    return { ok: true, data: { id: rows[0].id, token } };
+  } catch (error) {
+    console.log(error);
+    return { ok: false, error };
+  }
+};
+
+export const getPlayerById = async (id: string): Promise<Result<PlayerRow>> => {
+  try {
+    const { rows } = await db.query<PlayerRow>(
+      ` 
     SELECT id, name, current_balance, highest_score FROM player WHERE id = $1;
 `,
-    [id],
-  );
-  const user = rows[0];
-  if (!user) return { error: "User not found" };
-  try {
-    return user;
+      [id],
+    );
+    if (!rows[0]) throw new Error(noUserFoundErr);
+    return { ok: true, data: rows[0] };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 
-export const getAllPlayerDataById = async (id: string) => {
-  const { rows }: QueryResult<player> = await db.query(
+export const getAllPlayerDataById = async (
+  id: string,
+): Promise<Result<PlayerRow>> => {
+  const { rows } = await db.query<PlayerRow>(
     ` 
     SELECT * FROM player WHERE id = $1;
 `,
     [id],
   );
-  const user = rows[0];
-  if (!user) return { error: "User not found" };
+  if (!rows[0]) throw new Error(noUserFoundErr);
   try {
-    return user;
+    return { ok: true, data: rows[0] };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 
 export const updatePlayer = async (
   id: string,
-  updatedData: Partial<allPlayerData>,
-) => {
+  updatedData: Partial<AllPlayerData>,
+): Promise<Result<UpdateUserConfirmation>> => {
   try {
     const { name, password_hash, current_balance, highest_score } = updatedData;
-    const { rows }: QueryResult<player> = await db.query(
+    const { rows } = await db.query<PlayerRow>(
       `
     UPDATE player
     SET 
@@ -77,20 +106,22 @@ export const updatePlayer = async (
     RETURNING id; `,
       [name, password_hash, current_balance, highest_score, id],
     );
-    const user = rows[0];
-    if (!user) return { error: "User not found" };
-    return { updated_user: { id: user.id } };
+    if (!rows[0]) throw new Error(noUserFoundErr);
+    return { ok: true, data: { user_updated: { id: rows[0].id } } };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 
-export const createPlayer = async (name: string, password: string) => {
+export const createPlayer = async (
+  name: string,
+  password: string,
+): Promise<Result<AddUserConfirmation>> => {
   try {
     const hash = await bcrypt.hash(password, 10);
-    const { rows } = await db.query(
+    const { rows } = await db.query<PlayerNameRow>(
       `
-    INSERT INTO 
+   INSERT INTO 
       player(name, password_hash)
     VALUES
       ($1, $2)
@@ -98,25 +129,29 @@ export const createPlayer = async (name: string, password: string) => {
 `,
       [name, hash],
     );
-    return { added_player: rows[0] };
+    if (!rows[0]) throw new Error(noUserFoundErr);
+    return { ok: true, data: { user_added: { id: rows[0].id } } };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 
-export const deletePlayerById = async (id: string) => {
-  const { rows }: QueryResult<player> = await db.query(
-    `
+export const deletePlayerById = async (
+  id: string,
+): Promise<Result<DeleteUserConfirmation>> => {
+  try {
+    const { rows } = await db.query<PlayerNameRow>(
+      `
     DELETE FROM player
     WHERE id = $1 
     RETURNING id, name;
 `,
-    [id],
-  );
-  try {
-    return { deleted_user: rows[0] };
+      [id],
+    );
+    if (!rows[0]) throw new Error(noUserFoundErr);
+    return { ok: true, data: { user_deleted: { id: rows[0].id } } };
   } catch (error) {
-    return { error };
+    return { ok: false, error };
   }
 };
 export default {
@@ -126,50 +161,5 @@ export default {
   deletePlayerById,
   getAllPlayerDataById,
   updatePlayer,
+  confirmPlayer,
 };
-
-// export const deleteUserById = async (id) => {
-//   const isUser = getUserById(id);
-//   if (!isUser) return { error: `User not found` };
-//   const { rows } = client.query("DELETE FROM users WHERE id = $1", [id]);
-//   return { deleted: id };
-// };
-
-// export const patchUserById = async (id, prev) => {
-//   const { name, mail, image } = prev;
-//   const full_name = name
-//     .split(" ")
-//     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-//     .join(" ");
-//
-//   try {
-//   } catch (error) {
-//     return { error };
-//   }
-//   const user = await getUserById(id);
-//   if (!prev) return { error: "User not found" };
-//
-//   const { rows } = await client.query(
-//     `
-//       UPDATE users
-//       SET
-//         name = $1,
-//         mail = $2,
-//         image = $3,
-//         full_name = $4
-//       WHERE id = $5;`,
-//     [name || user.name, mail || user.mail, image || user.image, full_name, id],
-//   );
-//   return { updated_user: id };
-// };
-
-// export const getUserByMail = async (mail) => {
-//   const { rows } = await client.query("select * from users where mail = $1", [
-//     mail,
-//   ]);
-//   try {
-//     return rows[0];
-//   } catch (error) {
-//     return { error };
-//   }
-// };
