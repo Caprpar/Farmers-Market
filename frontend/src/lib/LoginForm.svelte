@@ -1,13 +1,22 @@
 <script lang="ts">
+  type PlayerRow = {
+    id: string;
+    name: string;
+    password_hash: string;
+    current_balance: number;
+    highest_score: number;
+  };
   let username: string = $state("");
   let password: string = $state("");
   let confirmPassword: string = $state("");
   let error: { error: string } = $state({ error: "" });
   let { signUpForm } = $props();
+  let player: PlayerRow | undefined = $state();
 
   function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     if (signUpForm) {
+      // signUpForm
       fetch("http://localhost:3000/api/player", {
         method: "POST",
         headers: {
@@ -20,20 +29,34 @@
           error = { error: data.error };
         });
     } else {
+      // logIn form
       fetch("http://localhost:3000/api/player/auth", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          authorization: localStorage.getItem("auth_token"),
         },
         body: JSON.stringify({ name: username, password }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.ok) {
-            console.log("success!");
-            localStorage.setItem("auth_token", data.data.token);
-            console.log(localStorage.getItem("auth_token"));
+          if (!data.ok) {
+            throw new Error("Authentication failed");
           }
+          localStorage.setItem("auth_token", data.data.token);
+
+          fetch(`http://localhost:3000/api/player/${data.data.id}`, {
+            headers: {
+              "Content-Type": "application/json",
+              authorization: localStorage.getItem("auth_token"),
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              error = { error: data.error };
+              player = data.data;
+            });
+
           error = { error: data.error };
         });
     }
@@ -66,7 +89,9 @@
       />
     {/if}
     {#if error.error}
-      <p class="text-wrap text-red-500 text-sm">{error.error}</p>
+      <p data-cy="login-error" class="text-wrap text-red-500 text-sm">
+        {error.error}
+      </p>
     {/if}
     <div class="flex justify-between">
       <button data-cy="confirm-btn" type="submit" class="w-fit"
