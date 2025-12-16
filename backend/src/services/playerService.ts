@@ -10,7 +10,7 @@ import type {
   WithAuth,
 } from "../types.ts";
 import bcrypt from "bcrypt";
-const noUserFoundErr = "no user found";
+const noUserFoundErr = "User or password is incorrect!";
 const passwordNotMatchName = "Password and username does not match";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
@@ -37,7 +37,6 @@ export const confirmPlayer = async (
 `,
       [name],
     );
-
     if (!rows[0]) return { ok: false, error: noUserFoundErr };
 
     const confirmPassword = await bcrypt.compare(
@@ -48,7 +47,7 @@ export const confirmPlayer = async (
     if (!confirmPassword) return { ok: false, error: passwordNotMatchName };
     const secret = process.env.JWT_HASH;
     if (!secret) throw new Error("JWT_HASH is not in .env");
-    const token = jwt.sign(rows[0], secret);
+    const token = jwt.sign({ id: rows[0].id }, secret);
     return { ok: true, data: { id: rows[0].id, token } };
   } catch (error) {
     console.log(error);

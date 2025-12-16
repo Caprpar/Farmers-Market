@@ -3,22 +3,16 @@ import type { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { getPlayerById } from "../services/playerService.ts";
+import type { PlayerRow } from "../types.ts";
 
 dotenv.config();
-
-interface Player {
-  id: number;
-  name: string;
-  // current_balance: number;
-  // highest_score: number;
-}
 
 interface TokenPayLoad extends JwtPayload {
   id: string;
 }
 
 interface AuthRequest extends Request {
-  player?: Player;
+  player?: PlayerRow;
 }
 
 const authMiddleware = async (
@@ -36,11 +30,11 @@ const authMiddleware = async (
       authorization.replace("Bearer ", ""),
       process.env.JWT_HASH!,
     ) as TokenPayLoad;
-    const player = (await getPlayerById(decoded.id)) as Player;
-    if (!player) {
+    const player = await getPlayerById(decoded.id);
+    if (!player.ok) {
       return res.status(401).json({ error: "player not found" });
     }
-    req.player = player;
+    req.body = { ...req.body, player: player.data };
   } catch (error) {
     return res.status(401).json({ error });
   }

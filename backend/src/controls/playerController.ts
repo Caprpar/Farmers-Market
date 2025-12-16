@@ -1,6 +1,22 @@
 import playerService from "../services/playerService.ts";
 import type { Request, Response } from "express";
+import type { PlayerRow } from "../types.ts";
 
+function getPlayerIdFromBody(body: { player: Partial<PlayerRow> }) {
+  const output: { error: string; id: string } = { error: "", id: "" };
+  if (!body.player) {
+    output.error = "no player found";
+    return output;
+  }
+  const { player } = body;
+  const { id } = player;
+  if (!id) {
+    output.error = "id not found";
+    return output;
+  }
+  output.id = id;
+  return output;
+}
 export const getPlayerNames = async (_req: Request, res: Response) => {
   try {
     const rows = await playerService.getPlayerNames();
@@ -27,8 +43,11 @@ export const confirmPlayer = async (req: Request, res: Response) => {
 
 export const getPlayerById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const rows = await playerService.getPlayerById(id!);
+    const { error, id } = getPlayerIdFromBody(req.body);
+    if (error) {
+      return res.status(500).json(error);
+    }
+    const rows = await playerService.getPlayerById(id);
     return res.status(201).json(rows);
   } catch (error) {
     return res.status(500).json({ error });
@@ -37,7 +56,10 @@ export const getPlayerById = async (req: Request, res: Response) => {
 
 export const deletePlayerById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { error, id } = getPlayerIdFromBody(req.body);
+    if (error) {
+      return res.status(500).json(error);
+    }
     const rows = await playerService.deletePlayerById(id!);
     return res.status(201).json(rows);
   } catch (error) {
@@ -66,8 +88,7 @@ export const createPlayer = async (req: Request, res: Response) => {
         error: "User already exists, please enter another username",
       });
     } else if (password !== confirmPassword) {
-      console.log(players[0].error);
-      return res.status(422).json({ name, error: "password must match" });
+      return res.status(422).json({ name, error: "password does not match" });
     }
 
     const rows = await playerService.createPlayer(name, password);
@@ -79,8 +100,10 @@ export const createPlayer = async (req: Request, res: Response) => {
 
 export const updatePlayer = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    if (!id) throw new Error("id is not defined");
+    const { error, id } = getPlayerIdFromBody(req.body);
+    if (error) {
+      return res.status(500).json(error);
+    }
     const old_player_rows = await playerService.getAllPlayerDataById(id);
     console.log(old_player_rows);
     if (!old_player_rows.ok) {
@@ -88,6 +111,7 @@ export const updatePlayer = async (req: Request, res: Response) => {
     }
     const old_players = old_player_rows.data;
     const { name, password_hash, current_balance, highest_score } = req.body;
+    console.log({ body: req.body });
     const updatedData = {
       name: name ?? old_players.name!,
       password_hash: password_hash ?? old_players.password_hash!,
@@ -97,6 +121,7 @@ export const updatePlayer = async (req: Request, res: Response) => {
           ? current_balance!
           : (highest_score ?? old_players.highest_score!),
     };
+    console.log({ updatedData });
     const rows = await playerService.updatePlayer(id, updatedData);
     return res.status(201).json(rows);
   } catch (error) {

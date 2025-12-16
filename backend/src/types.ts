@@ -35,7 +35,7 @@ export type PlayerNameRow = {
 };
 
 export type PlayerRow = {
-  id: number;
+  id: string;
   name: string;
   password_hash: string;
   current_balance: number;
@@ -44,4 +44,8 @@ export type PlayerRow = {
 
 export interface WithAuth {
   token: string;
+}
+
+export interface AuthRequest extends Request {
+  player: PlayerRow;
 }
