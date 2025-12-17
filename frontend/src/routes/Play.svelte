@@ -32,7 +32,7 @@
     for (const betButton of buttons) {
       if (betButton.isPressed) {
         const calculateBet = player?.current_balance! * betButton.value;
-        currentBet += calculateBet / 100;
+        currentBet += Math.round(calculateBet / 100);
       }
       buttons.forEach((btn) => {
         const willExeed =
@@ -46,8 +46,35 @@
       });
     }
   }
+  function applyFiftyFiftyBet(current_balance: number, bet: number): number {
+    current_balance += Math.random() < 0.5 ? bet : bet * -1;
+    return current_balance < 0 ? 0 : current_balance;
+  }
+  function resetButtons() {
+    currentBet = 0;
+    buttons.forEach((btn) => {
+      btn.isPressed = false;
+      btn.isDisabled = false;
+    });
+  }
 
-  onMount(async () => {
+  async function handlePlay() {
+    const new_balance: number = Math.round(
+      applyFiftyFiftyBet(player?.current_balance!, currentBet),
+    );
+
+    const token: string | null = localStorage.getItem("auth_token");
+    const headers = new Headers({ "Content-Type": "application/json" });
+    if (token) headers.set("authorization", token);
+    const res = await fetch(`http://localhost:3000/api/player/${player!.id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ current_balance: new_balance }),
+    });
+    player = await getPlayerData();
+    resetButtons();
+  }
+  async function getPlayerData(): Promise<PlayerRow> {
     const token: string | null = localStorage.getItem("auth_token");
     console.log(token);
     const headers = new Headers({ "Content-Type": "application/json" });
@@ -56,7 +83,10 @@
     const res = await fetch(`http://localhost:3000/api/player/0`, { headers });
     const data = await res.json();
     error = { error: data.error };
-    player = data.data;
+    return data.data;
+  }
+  onMount(async () => {
+    player = await getPlayerData();
   });
 </script>
 
@@ -84,7 +114,7 @@
         >
       {/each}
     </div>
-    <button class="w-full">play</button>
+    <button class="w-full" onclick={handlePlay}>play</button>
   </div>
 </div>
 
