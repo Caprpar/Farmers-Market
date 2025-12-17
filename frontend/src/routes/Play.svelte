@@ -90,37 +90,41 @@
   });
 </script>
 
-<div>
+<div class="w-full bg-stone-900 p-5 rounded-lg" id="main">
   {#if player}
-    <ul class="flex gap-4">
-      <ol>Name: {player.name}</ol>
-      <ol>current balance: {player.current_balance}</ol>
-      <ol>highest score: {player.highest_score}</ol>
-    </ul>
+    <div class="flex flex-col">
+      <div class="w-full flex flex-row justify-between border-b">
+        <p id="current_balance">Balance:</p>
+        <p id="current_balance">{player?.current_balance}</p>
+      </div>
+      <p
+        class="w-full rounded-full flex justify-center items-center bg-stone-800 py-5 my-2"
+        id="current_bet"
+      >
+        {currentBet}
+      </p>
+      <span class="flex w-full justify-center mb-2 text-xs text-stone-400"
+        >Place precentage of current balance</span
+      >
+      <div class="flex justify-around pb-5">
+        {#each buttons as item, index}
+          <button
+            disabled={item.isDisabled}
+            class:isPressed={item.isPressed}
+            onclick={() => toggle(index)}>{item.value}</button
+          >
+        {/each}
+      </div>
+      <button class="w-full" onclick={handlePlay}>play</button>
+    </div>
   {:else}
     <h1>Please login to play</h1>
   {/if}
-  <div class="flex flex-col">
-    <div class="w-full flex flex-row-reverse">
-      <p id="current_balance">{player?.current_balance}</p>
-    </div>
-    <p class="w-full flex justify-center pb-5" id="current_bet">{currentBet}</p>
-    <div class="flex justify-around pb-5">
-      {#each buttons as item, index}
-        <button
-          disabled={item.isDisabled}
-          class:isPressed={item.isPressed}
-          onclick={() => toggle(index)}>{item.value}</button
-        >
-      {/each}
-    </div>
-    <button class="w-full" onclick={handlePlay}>play</button>
-  </div>
 </div>
 
 <style>
   #current_balance {
-    font-size: 1.5em;
+    font-size: 1em;
   }
   #current_bet {
     font-size: 4em;
@@ -145,6 +149,9 @@
     cursor: default;
   }
   .isPressed {
-    outline: solid 1em hsl(0 0 0);
+    scale: 1.3;
+  }
+  #main {
+    min-width: 15em;
   }
 </style>
