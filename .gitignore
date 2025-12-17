@@ -4,3 +4,4 @@ frontend/cypress/e2e/2-advanced-examples
 krav.md
 backend/.env
 backend/help.sql
+node_modules
