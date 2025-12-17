@@ -1,16 +1,19 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+
   type DataRow = {
     player: string;
     id: string;
     highscore: number;
   };
-  let players: DataRow[] = $state();
-  fetch("http://localhost:3000/api/scoreboard")
-    .then((res) => res.json())
-    .then((data) => {
-      players = data;
-      console.log(data);
-    });
+  let players: DataRow[] | null = $state(null);
+  onMount(() => {
+    fetch("http://localhost:3000/api/scoreboard")
+      .then((res) => res.json())
+      .then((data) => {
+        players = data;
+      });
+  });
 </script>
 
 <div>
