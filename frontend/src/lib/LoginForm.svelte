@@ -6,12 +6,13 @@
     current_balance: number;
     highest_score: number;
   };
+  import { push } from "svelte-spa-router";
   let username: string = $state("");
   let password: string = $state("");
   let confirmPassword: string = $state("");
   let error: { error: string } = $state({ error: "" });
   let { signUpForm } = $props();
-  let player: PlayerRow | undefined = $state();
+  let loginRedirect: "Loggin in..." | null = $state(null);
 
   function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
@@ -30,12 +31,12 @@
         });
     } else {
       // logIn form
+      const token: string | null = localStorage.getItem("auth_token");
+      const headers = new Headers({ "Content-Type": "application/json" });
+      if (token) headers.set("authorization", token);
       fetch("http://localhost:3000/api/player/auth", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: localStorage.getItem("auth_token"),
-        },
+        headers,
         body: JSON.stringify({ name: username, password }),
       })
         .then((res) => res.json())
@@ -45,16 +46,25 @@
           }
           localStorage.setItem("auth_token", data.data.token);
 
+          const token: string | null = localStorage.getItem("auth_token");
+          const headers = new Headers({ "Content-Type": "application/json" });
+          if (token) headers.set("authorization", token);
           fetch(`http://localhost:3000/api/player/${data.data.id}`, {
-            headers: {
-              "Content-Type": "application/json",
-              authorization: localStorage.getItem("auth_token"),
-            },
+            headers,
           })
             .then((res) => res.json())
             .then((data) => {
               error = { error: data.error };
-              player = data.data;
+              console.log();
+              if (!error.error) {
+                console.log("Start waiting...");
+                loginRedirect = "Loggin in...";
+
+                setTimeout(() => {
+                  console.log("Waited 2 seconds!");
+                  push("/play");
+                }, 2000); // Waits for 3000 milliseconds (3 seconds)
+              }
             });
 
           error = { error: data.error };
@@ -91,6 +101,11 @@
     {#if error.error}
       <p data-cy="login-error" class="text-wrap text-red-500 text-sm">
         {error.error}
+      </p>
+    {/if}
+    {#if loginRedirect}
+      <p data-cy="login-redirect" class="text-wrap text-green-500 text-sm">
+        {loginRedirect}
       </p>
     {/if}
     <div class="flex justify-between">
