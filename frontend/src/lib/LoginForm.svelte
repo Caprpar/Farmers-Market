@@ -6,6 +6,7 @@
     current_balance: number;
     highest_score: number;
   };
+  import { getAuthHeaders } from "../hooks/playerHooks.ts";
   import { push } from "svelte-spa-router";
   let username: string = $state("");
   let password: string = $state("");
@@ -31,9 +32,7 @@
         });
     } else {
       // logIn form
-      const token: string | null = localStorage.getItem("auth_token");
-      const headers = new Headers({ "Content-Type": "application/json" });
-      if (token) headers.set("authorization", token);
+      const headers = getAuthHeaders();
       fetch("http://localhost:3000/api/player/auth", {
         method: "POST",
         headers,
@@ -46,9 +45,7 @@
           }
           localStorage.setItem("auth_token", data.data.token);
 
-          const token: string | null = localStorage.getItem("auth_token");
-          const headers = new Headers({ "Content-Type": "application/json" });
-          if (token) headers.set("authorization", token);
+          const headers = getAuthHeaders();
           fetch(`http://localhost:3000/api/player/${data.data.id}`, {
             headers,
           })
