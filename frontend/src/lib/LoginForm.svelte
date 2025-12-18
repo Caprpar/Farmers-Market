@@ -15,57 +15,54 @@
   let { signUpForm } = $props();
   let loginRedirect: "Loggin in..." | null = $state(null);
 
-  function handleSubmit(event: SubmitEvent) {
+  async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     if (signUpForm) {
       // signUpForm
-      fetch("http://localhost:3000/api/player", {
+      const res = await fetch("http://localhost:3000/api/player", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name: username, password, confirmPassword }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          error = { error: data.error };
-        });
+      });
+      const data = await res.json();
+      error = { error: data.error };
     } else {
       // logIn form
       const headers = getAuthHeaders();
-      fetch("http://localhost:3000/api/player/auth", {
+
+      //confirm auth token
+      const auth_res = await fetch("http://localhost:3000/api/player/auth", {
         method: "POST",
         headers,
         body: JSON.stringify({ name: username, password }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            throw new Error("Authentication failed");
-          }
-          localStorage.setItem("auth_token", data.data.token);
+      });
+      const auth_data = await auth_res.json();
+      if (!auth_data.ok) {
+        throw new Error("Authentication failed");
+      }
+      localStorage.setItem("auth_token", auth_data.data.token);
 
-          const headers = getAuthHeaders();
-          fetch(`http://localhost:3000/api/player/${data.data.id}`, {
-            headers,
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              error = { error: data.error };
-              console.log();
-              if (!error.error) {
-                console.log("Start waiting...");
-                loginRedirect = "Loggin in...";
+      //get player with token
+      const player_res = await fetch(
+        `http://localhost:3000/api/player/${auth_data.data.id}`,
+        {
+          headers,
+        },
+      );
+      const player_data = await player_res.json();
+      error = { error: player_data.error };
+      console.log();
+      if (!error.error) {
+        loginRedirect = "Loggin in...";
 
-                setTimeout(() => {
-                  console.log("Waited 2 seconds!");
-                  push("/play");
-                }, 2000); // Waits for 3000 milliseconds (3 seconds)
-              }
-            });
+        setTimeout(() => {
+          push("/play");
+        }, 2000);
+      }
 
-          error = { error: data.error };
-        });
+      error = { error: player_data.error };
     }
   }
 </script>

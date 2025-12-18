@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { getAuthHeaders } from "../hooks/playerHooks";
 
   type PlayerRow = {
     id: string;
@@ -63,9 +64,7 @@
       applyFiftyFiftyBet(player?.current_balance!, currentBet),
     );
 
-    const token: string | null = localStorage.getItem("auth_token");
-    const headers = new Headers({ "Content-Type": "application/json" });
-    if (token) headers.set("authorization", token);
+    const headers = getAuthHeaders();
     const res = await fetch(`http://localhost:3000/api/player/${player!.id}`, {
       method: "PATCH",
       headers,
@@ -75,10 +74,7 @@
     resetButtons();
   }
   async function getPlayerData(): Promise<PlayerRow> {
-    const token: string | null = localStorage.getItem("auth_token");
-    console.log(token);
-    const headers = new Headers({ "Content-Type": "application/json" });
-    if (token) headers.set("authorization", token);
+    const headers = getAuthHeaders();
 
     const res = await fetch(`http://localhost:3000/api/player/0`, { headers });
     const data = await res.json();
