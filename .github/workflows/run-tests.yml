@@ -1,0 +1,48 @@
+name: Run all e2e tests
+on: [push]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    environment: DATABASE_URL
+
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v6
+
+      - name: setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install the backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build the backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          npm start &
+          node -e "console.log('DATABASE_URL set:', !!process.env.DATABASE_URL)"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_HASH: ${{ secrets.JWT_HASH }}
+          PORT: 3000
+
+      - name: waiting for backend to start
+        run: sleep 5
+
+      - name: cypress e2e
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: frontend
+          start: npm run dev
+          wait-on: "http://localhost:5173"

@@ -22,6 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-*.js*
-*.d.ts*
+*.js.map
+*.js
+*.d.ts.map
 node_modules

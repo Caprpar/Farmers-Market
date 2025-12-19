@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../database.ts";
 import type {
   AllPlayerData,
@@ -13,7 +14,6 @@ import bcrypt from "bcrypt";
 const noUserFoundErr = "User or password is incorrect!";
 const passwordNotMatchName = "Password and username does not match";
 import jwt from "jsonwebtoken";
-import "dotenv/config";
 export const getPlayerNames = async (): Promise<Result<PlayerNameRow[]>> => {
   try {
     const { rows } = await db.query<PlayerNameRow>(

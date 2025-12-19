@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 // import IstanbulPlugin from "vite-plugin-istanbul";
 
 import * as mod from "vite-plugin-istanbul";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const IstanbulPlugin = (mod as any).default ?? (mod as any);
 // https://vite.dev/config/
 export default defineConfig({

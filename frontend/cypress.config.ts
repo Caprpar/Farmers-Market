@@ -1,11 +1,13 @@
 import { defineConfig } from "cypress";
+import registerLocalstorage from "cypress-localstorage-commands/plugin";
+import codeCoverageTask from "@cypress/code-coverage/task";
 
 export default defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
       // implement node event listeners here
-      require("cypress-localstorage-commands/plugin")(on, config);
-      require("@cypress/code-coverage/task")(on, config);
+      registerLocalstorage(on, config);
+      codeCoverageTask(on, config);
       return config;
     },
     baseUrl: "http://localhost:5173/",

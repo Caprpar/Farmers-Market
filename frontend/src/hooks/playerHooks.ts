@@ -2,7 +2,6 @@ import type {
   PlayerAuthResponse,
   PlayerRow,
   PlayerRowResponse,
-  PlayerRowWithError,
 } from "../types.js";
 
 export function getAuthHeaders(): Headers {
