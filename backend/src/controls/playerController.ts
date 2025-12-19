@@ -101,13 +101,11 @@ export const updatePlayer = async (req: Request, res: Response) => {
       return res.status(500).json(error);
     }
     const old_player_rows = await playerService.getAllPlayerDataById(id);
-    console.log(old_player_rows);
     if (!old_player_rows.ok) {
       return res.status(500).json({ error: old_player_rows.error });
     }
     const old_players = old_player_rows.data;
     const { name, password_hash, current_balance, highest_score } = req.body;
-    console.log({ body: req.body });
     const updatedData = {
       name: name ?? old_players.name!,
       password_hash: password_hash ?? old_players.password_hash!,
@@ -117,7 +115,6 @@ export const updatePlayer = async (req: Request, res: Response) => {
           ? current_balance!
           : (highest_score ?? old_players.highest_score!),
     };
-    console.log({ updatedData });
     const rows = await playerService.updatePlayer(id, updatedData);
     return res.status(201).json(rows);
   } catch (error) {

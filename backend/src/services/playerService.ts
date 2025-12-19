@@ -50,7 +50,6 @@ export const confirmPlayer = async (
     const token = jwt.sign({ id: rows[0].id }, secret);
     return { ok: true, data: { id: rows[0].id, token } };
   } catch (error) {
-    console.log(error);
     return { ok: false, error };
   }
 };
