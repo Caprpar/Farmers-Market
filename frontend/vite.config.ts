@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 // import IstanbulPlugin from "vite-plugin-istanbul";
 
 import * as mod from "vite-plugin-istanbul";
-
 const IstanbulPlugin = (mod as any).default ?? (mod as any);
 // https://vite.dev/config/
 export default defineConfig({

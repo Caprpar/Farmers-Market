@@ -10,7 +10,7 @@
     "module": "nodenext",
     "target": "esnext",
     // For nodejs:
-    "lib": ["esnext"],
+    "lib": ["esnext", "ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
     // and npm install -D @types/node
 
@@ -40,6 +40,8 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   }
 }

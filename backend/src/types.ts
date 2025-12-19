@@ -30,7 +30,7 @@ export type Result<T> =
   | { ok: false; error: unknown };
 
 export type PlayerNameRow = {
-  id: number;
+  id: string;
   name: string;
 };
 

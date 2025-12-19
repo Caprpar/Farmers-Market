@@ -9,6 +9,7 @@ export default defineConfig({
       return config;
     },
     baseUrl: "http://localhost:5173/",
+    supportFile: "cypress/support/e2e.ts",
   },
 
   component: {
