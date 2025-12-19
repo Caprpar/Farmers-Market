@@ -1,6 +1,5 @@
 import { mount } from "cypress/svelte";
 import LoginForm from "../../src/lib/LoginForm.svelte";
-
 describe("LoginForm.cy.ts", () => {
   it('data-cy="confirm-btn" exist', () => {
     mount(LoginForm);
