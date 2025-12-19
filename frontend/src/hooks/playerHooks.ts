@@ -1,4 +1,9 @@
-import type { PlayerRow, PlayerRowWithError } from "../types.js";
+import type {
+  PlayerAuthResponse,
+  PlayerRow,
+  PlayerRowResponse,
+  PlayerRowWithError,
+} from "../types.js";
 
 export function getAuthHeaders(): Headers {
   const token: string | null = localStorage.getItem("auth_token");
@@ -7,32 +12,36 @@ export function getAuthHeaders(): Headers {
   return headers;
 }
 
-export async function confirmLogin(username: string, password: string) {
+export async function confirmLogin(
+  username: string,
+  password: string,
+): Promise<PlayerAuthResponse> {
   const headers = getAuthHeaders();
   const res = await fetch("http://localhost:3000/api/player/auth", {
     method: "POST",
     headers,
     body: JSON.stringify({ name: username, password }),
   });
-  const { data, error } = await res.json();
-  if (!error) {
-    localStorage.setItem("auth_token", data.token);
+  const body = (await res.json()) as PlayerAuthResponse;
+  console.log(body);
+  if (body.ok) {
+    localStorage.setItem("auth_token", body.data.token);
   }
-  return { data, error };
+  return body;
 }
 
-export async function getPlayerData(): Promise<PlayerRowWithError> {
+export async function getPlayerData(): Promise<PlayerRowResponse> {
   const headers = getAuthHeaders();
   const res = await fetch(`http://localhost:3000/api/player/0`, { headers });
-  const { data, error } = await res.json();
-  return { data, error };
+  const body = (await res.json()) as PlayerAuthResponse;
+  return body;
 }
 
 export async function createPlayer(
   username: string,
   password: string,
   confirmPassword: string,
-): Promise<PlayerRowWithError> {
+): Promise<PlayerRowResponse> {
   const res = await fetch("http://localhost:3000/api/player", {
     method: "POST",
     headers: {
@@ -40,20 +49,19 @@ export async function createPlayer(
     },
     body: JSON.stringify({ name: username, password, confirmPassword }),
   });
-  const { data, error } = await res.json();
-  console.log({ data, error });
-  return { data, error };
+  const body = (await res.json()) as PlayerRowResponse;
+  return body;
 }
 
 export async function patchPlayer(
   updated_data: Partial<PlayerRow>,
-): Promise<PlayerRowWithError> {
+): Promise<PlayerRowResponse> {
   const headers = getAuthHeaders();
   const res = await fetch(`http://localhost:3000/api/player/0`, {
     method: "PATCH",
     headers,
     body: JSON.stringify(updated_data),
   });
-  const { data, error } = await res.json();
-  return { data, error };
+  const body = (await res.json()) as PlayerRowResponse;
+  return body;
 }

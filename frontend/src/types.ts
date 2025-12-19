@@ -11,6 +11,14 @@ export interface PlayerRowWithError {
   error: unknown;
 }
 
+export type PlayerRowResponse =
+  | { ok: true; data: PlayerRow }
+  | { ok: false; error: string };
+
+export type PlayerAuthResponse =
+  | { ok: true; data: { token: string } & PlayerRow }
+  | { ok: false; error: string };
+
 export type betButton = {
   value: number;
   isPressed: boolean;

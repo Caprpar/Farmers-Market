@@ -21,21 +21,23 @@
     event.preventDefault();
     if (signUpForm) {
       // signUpForm
-      const { error: res_error } = await createPlayer(
+      const create_res = await createPlayer(
         username,
         password,
         confirmPassword,
       );
-      if (res_error) error = { error: res_error };
+      if (!create_res.ok) error.error = create_res.error;
     } else {
       // logIn form
-      const { error: confirm_error } = await confirmLogin(username, password);
-      if (confirm_error) {
-        error.error = confirm_error;
+      const confirm_res = await confirmLogin(username, password);
+      if (!confirm_res.ok) {
+        error.error = confirm_res.error;
       } else {
         // check if user credentials are valid
-        const { error: res_error } = await getPlayerData();
-        error.error = res_error;
+        const player_res = await getPlayerData();
+        if (!player_res.ok) {
+          error.error = player_res.error;
+        }
       }
 
       //get player with token
