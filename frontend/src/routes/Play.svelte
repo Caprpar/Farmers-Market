@@ -1,21 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getAuthHeaders } from "../hooks/playerHooks";
+  import {
+    getAuthHeaders,
+    getPlayerData,
+    patchPlayer,
+  } from "../hooks/playerHooks";
+  import type { betButton, PlayerRow } from "../types";
 
-  type PlayerRow = {
-    id: string;
-    name: string;
-    password_hash: string;
-    current_balance: number;
-    highest_score: number;
-  };
-  // (item.value / 100) * currentBet + player?.current_balance! >
-  //             player?.current_balance! && item.isPressed
-  type betButton = {
-    value: number;
-    isPressed: boolean;
-    isDisabled: boolean;
-  };
   const buttons = $state<betButton[]>([
     { value: 20, isPressed: false, isDisabled: false },
     { value: 50, isPressed: false, isDisabled: false },
@@ -23,7 +14,7 @@
   ]);
 
   let player: PlayerRow | null = $state(null);
-  let error = $state({});
+  let display_error = $state({});
   let currentBet: number = $state(0);
 
   function toggle(index: number) {
@@ -47,10 +38,12 @@
       });
     }
   }
+
   function applyFiftyFiftyBet(current_balance: number, bet: number): number {
     current_balance += Math.random() < 0.5 ? bet : bet * -1;
     return current_balance < 0 ? 0 : current_balance;
   }
+
   function resetButtons() {
     currentBet = 0;
     buttons.forEach((btn) => {
@@ -64,29 +57,26 @@
       applyFiftyFiftyBet(player?.current_balance!, currentBet),
     );
 
-    const headers = getAuthHeaders();
-    const res = await fetch(`http://localhost:3000/api/player/${player!.id}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ current_balance: new_balance }),
-    });
-    player = await getPlayerData();
+    await patchPlayer({ current_balance: new_balance });
+    const { data, error } = await getPlayerData();
+    if (error) {
+      display_error = error;
+    }
+    player = data;
     resetButtons();
   }
-  async function getPlayerData(): Promise<PlayerRow> {
-    const headers = getAuthHeaders();
 
-    const res = await fetch(`http://localhost:3000/api/player/0`, { headers });
-    const data = await res.json();
-    error = { error: data.error };
-    return data.data;
-  }
   onMount(async () => {
-    player = await getPlayerData();
+    const { data, error } = await getPlayerData();
+    console.log({ data, error });
+    if (error) {
+      display_error = error;
+    }
+    player = data;
   });
 </script>
 
-<div class="w-full bg-stone-900 p-5 rounded-lg" id="main">
+<div class="w-full bg-stone-900 p-5 rounded-lg" id="main" data-cy="bet-board">
   {#if player}
     <div class="flex flex-col">
       <div class="w-full flex flex-row justify-between border-b">
@@ -105,16 +95,19 @@
       <div class="flex justify-around pb-5">
         {#each buttons as item, index}
           <button
+            data-cy={`${item.value}-btn`}
             disabled={item.isDisabled}
             class:isPressed={item.isPressed}
             onclick={() => toggle(index)}>{item.value}</button
           >
         {/each}
       </div>
-      <button class="w-full" onclick={handlePlay}>play</button>
+      <button data-cy="play-btn" class="w-full" onclick={handlePlay}
+        >play</button
+      >
     </div>
   {:else}
-    <h1>Please login to play</h1>
+    <h1 data-cy="login-information">Please login to play</h1>
   {/if}
 </div>
 

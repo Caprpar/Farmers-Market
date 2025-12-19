@@ -1,68 +1,50 @@
 <script lang="ts">
-  type PlayerRow = {
-    id: string;
-    name: string;
-    password_hash: string;
-    current_balance: number;
-    highest_score: number;
-  };
-  import { getAuthHeaders } from "../hooks/playerHooks.ts";
+  import {
+    confirmLogin,
+    createPlayer,
+    getPlayerData,
+  } from "../hooks/playerHooks";
   import { push } from "svelte-spa-router";
+
+  type Props = {
+    signUpForm?: boolean;
+  };
+
   let username: string = $state("");
   let password: string = $state("");
   let confirmPassword: string = $state("");
-  let error: { error: string } = $state({ error: "" });
-  let { signUpForm } = $props();
+  let error: { error: unknown } = $state({ error: "" });
+  let { signUpForm = false }: Props = $props();
   let loginRedirect: "Loggin in..." | null = $state(null);
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     if (signUpForm) {
       // signUpForm
-      const res = await fetch("http://localhost:3000/api/player", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: username, password, confirmPassword }),
-      });
-      const data = await res.json();
-      error = { error: data.error };
+      const { error: res_error } = await createPlayer(
+        username,
+        password,
+        confirmPassword,
+      );
+      if (res_error) error = { error: res_error };
     } else {
       // logIn form
-      const headers = getAuthHeaders();
-
-      //confirm auth token
-      const auth_res = await fetch("http://localhost:3000/api/player/auth", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ name: username, password }),
-      });
-      const auth_data = await auth_res.json();
-      if (!auth_data.ok) {
-        throw new Error("Authentication failed");
+      const { error: confirm_error } = await confirmLogin(username, password);
+      if (confirm_error) {
+        error.error = confirm_error;
+      } else {
+        // check if user credentials are valid
+        const { error: res_error } = await getPlayerData();
+        error.error = res_error;
       }
-      localStorage.setItem("auth_token", auth_data.data.token);
 
       //get player with token
-      const player_res = await fetch(
-        `http://localhost:3000/api/player/${auth_data.data.id}`,
-        {
-          headers,
-        },
-      );
-      const player_data = await player_res.json();
-      error = { error: player_data.error };
-      console.log();
       if (!error.error) {
         loginRedirect = "Loggin in...";
-
         setTimeout(() => {
           push("/play");
-        }, 2000);
+        }, 1000);
       }
-
-      error = { error: player_data.error };
     }
   }
 </script>
