@@ -14,7 +14,7 @@ router.get("/players", getPlayerNames);
 router.post("/player", createPlayer);
 router.get("/player/:id", authMiddleware, getPlayerById);
 router.post("/player/auth", confirmPlayer);
-router.delete("/player/:id", authMiddleware, deletePlayerById);
+router.delete("/player/:id", deletePlayerById);
 router.patch("/player/:id", authMiddleware, updatePlayer);
 
 export default router;

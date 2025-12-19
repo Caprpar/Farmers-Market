@@ -32,7 +32,6 @@ export const confirmPlayer = async (req: Request, res: Response) => {
     const rows = await playerService.confirmPlayer(name, password);
 
     if (!rows.ok) {
-      console.log(rows.error);
       return res.status(500).json({ error: rows.error });
     }
     return res.status(201).json(rows);
@@ -56,10 +55,7 @@ export const getPlayerById = async (req: Request, res: Response) => {
 
 export const deletePlayerById = async (req: Request, res: Response) => {
   try {
-    const { error, id } = getPlayerIdFromBody(req.body);
-    if (error) {
-      return res.status(500).json(error);
-    }
+    const { id } = req.params;
     const rows = await playerService.deletePlayerById(id!);
     return res.status(201).json(rows);
   } catch (error) {
